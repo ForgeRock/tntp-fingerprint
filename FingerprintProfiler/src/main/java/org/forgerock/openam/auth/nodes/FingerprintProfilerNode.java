@@ -157,7 +157,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
         return "const fpPromise = import('" + url + apiKey + "') \n" +
                       ".then(FingerprintJS => FingerprintJS.load({ \n" +
                       " region: \"" + region + "\" \n" +
-                      " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" +
+                      ((apiEndpointURL == "") ? " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" : "") +
                       "})) \n" +
                       "fpPromise \n" +
                       ".then(fp => fp.get()) \n" +
