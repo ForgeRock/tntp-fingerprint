@@ -52,7 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.forgerock.openam.sm.annotations.adapters.Password;
 
 
 
@@ -73,8 +73,9 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
 
     
     public interface Config {
-       @Attribute(order = 100)
-        default String apiKey() { return "apiKey"; }
+        @Attribute(order = 100)
+        @Password
+        char[] apiKey();
 
         @Attribute(order = 200)
         default String url() { return "https://eu.api.fpjs.io/events/"; }
@@ -112,7 +113,7 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
 
             String requestId = context.sharedState.get("deviceRequestId").asString();
 
-            URL url = new URL(config.url() + requestId + "?api_key=" + config.apiKey());
+            URL url = new URL(config.url() + requestId + "?api_key=" + (new String(config.apiKey())));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");

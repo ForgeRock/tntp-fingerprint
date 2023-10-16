@@ -46,6 +46,7 @@ import java.util.HashMap;
 import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
+import org.forgerock.openam.sm.annotations.adapters.Password;
 
 
 /**
@@ -77,9 +78,10 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
     }
 
     public interface Config {
-       @Attribute(order = 100)
-        default String apiKey() { return "apiKey"; }
-
+        @Attribute(order = 100)
+        @Password
+        char[] apiKey();
+       
         @Attribute(order = 200)
         default String url() { return "URL"; }
 
@@ -130,7 +132,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
 
                 return goTo(true).replaceSharedState(newSharedState).build();
             } else {
-                String clientSideScriptExecutorFunction = createClientSideScript(config.url(), config.apiKey(), getRegion(config.region()));
+                String clientSideScriptExecutorFunction = createClientSideScript(config.url(), new String(config.apiKey()), config.apiEndpointURL(), getRegion(config.region()));
                 ScriptTextOutputCallback scriptAndSelfSubmitCallback =
                         new ScriptTextOutputCallback(clientSideScriptExecutorFunction);
 
@@ -151,10 +153,11 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
     }
 
 
-    public static String createClientSideScript(String url, String apiKey, String region) {
+    public static String createClientSideScript(String url, String apiKey, String apiEndpointURL, String region) {
         return "const fpPromise = import('" + url + apiKey + "') \n" +
                       ".then(FingerprintJS => FingerprintJS.load({ \n" +
                       " region: \"" + region + "\" \n" +
+                      " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" +
                       "})) \n" +
                       "fpPromise \n" +
                       ".then(fp => fp.get()) \n" +
