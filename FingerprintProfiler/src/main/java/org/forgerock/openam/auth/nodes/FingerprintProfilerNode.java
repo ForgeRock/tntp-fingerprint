@@ -16,7 +16,7 @@
 /**
  * jon.knight@forgerock.com
  *
- * An authentication node which uses JavascriptJS library for device fingerprinting
+ * An authentication node which uses Javascript library for device fingerprinting
  */
 
 
@@ -69,11 +69,11 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
      */
 
 
-    public enum Region { US, EU, ASIA }
+    public enum Region { GLOBAL, EU, ASIA }
     public String getRegion(Region region) {
         if (region == Region.EU) return "eu";
         else if (region == Region.ASIA) return "ap";
-        else return "us";
+        else return "global";
     }
 
     public interface Config {
@@ -84,14 +84,17 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
         default String url() { return "URL"; }
 
         @Attribute(order = 300)
-        default Region region() {
-            return Region.US;
-        }
+        default String apiEndpointURL() { return ""; }
 
         @Attribute(order = 400)
-        default String visitorID() { return "deviceFingerPrint"; }
+        default Region region() {
+            return Region.GLOBAL;
+        }
 
         @Attribute(order = 500)
+        default String visitorID() { return "deviceFingerPrint"; }
+
+        @Attribute(order = 600)
         default boolean ztm() { return false; }
     }
 
@@ -117,6 +120,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
             
             if (result.isPresent()) {
                 JsonValue newSharedState = context.sharedState.copy();
+
                 JsonValue resultJson = JsonValueBuilder.toJsonValue(result.get());
                 if (!config.ztm()) {
                     newSharedState.put(config.visitorID(), resultJson.get("visitorID"));
