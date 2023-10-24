@@ -81,7 +81,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
         @Attribute(order = 100)
         @Password
         char[] apiKey();
-       
+
         @Attribute(order = 200)
         default String url() { return "URL"; }
 
@@ -117,9 +117,9 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
         try {
 
             logger.debug(loggerPrefix + "Started");
-            
+
             Optional<String> result = context.getCallback(HiddenValueCallback.class).map(HiddenValueCallback::getValue).filter(scriptOutput -> !Strings.isNullOrEmpty(scriptOutput));
-            
+
             if (result.isPresent()) {
                 JsonValue newSharedState = context.sharedState.copy();
 
@@ -148,16 +148,15 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
             context.getStateFor(this).putShared(loggerPrefix + "Exception", ex.getMessage());
             context.getStateFor(this).putShared(loggerPrefix + "StackTrace", stackTrace);
             return Action.goTo("error").build();
-        }   
+        }
 
     }
 
-
     public static String createClientSideScript(String url, String apiKey, String apiEndpointURL, String region) {
+        String sRegion = ((apiEndpointURL != "" && apiEndpointURL != null) ? "" : " region: \"" + region + "\" \n");
+        String sEndpoint = ((apiEndpointURL != "" && apiEndpointURL != null) ? " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" : "");
         return "const fpPromise = import('" + url + apiKey + "') \n" +
-                      ".then(FingerprintJS => FingerprintJS.load({ \n" +
-                      " region: \"" + region + "\" \n" +
-                      ((apiEndpointURL != "") ? " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" : "") +
+                      ".then(FingerprintJS => FingerprintJS.load({ \n" + sRegion + sEndpoint +
                       "})) \n" +
                       "fpPromise \n" +
                       ".then(fp => fp.get()) \n" +
@@ -190,4 +189,3 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
 
 
 }
-
