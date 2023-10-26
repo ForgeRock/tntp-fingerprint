@@ -74,7 +74,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
     public String getRegion(Region region) {
         if (region == Region.EU) return "eu";
         else if (region == Region.ASIA) return "ap";
-        else return "global";
+        else return "us";
     }
 
     public interface Config {
