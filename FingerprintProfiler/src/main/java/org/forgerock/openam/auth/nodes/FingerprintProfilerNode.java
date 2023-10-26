@@ -15,7 +15,7 @@
  */
 /**
  * jon.knight@forgerock.com
- *
+ * marcin.zimny@forgerock.com
  * An authentication node which uses Javascript library for device fingerprinting
  */
 
@@ -83,7 +83,7 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
         char[] apiKey();
 
         @Attribute(order = 200)
-        default String url() { return "URL"; }
+        default String url() { return ""; }
 
         @Attribute(order = 300)
         default String apiEndpointURL() { return ""; }
@@ -132,15 +132,19 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
 
                 return goTo(true).replaceSharedState(newSharedState).build();
             } else {
-                String clientSideScriptExecutorFunction = createClientSideScript(config.url(), new String(config.apiKey()), config.apiEndpointURL(), getRegion(config.region()));
-                ScriptTextOutputCallback scriptAndSelfSubmitCallback =
-                        new ScriptTextOutputCallback(clientSideScriptExecutorFunction);
+              String fpUrl = config.url();
+              if(fpUrl == null || fpUrl == "") {
+                fpUrl = "https://fpjscdn.net/v3";
+              }
+              String clientSideScriptExecutorFunction = createClientSideScript(fpUrl, new String(config.apiKey()), config.apiEndpointURL(), getRegion(config.region()));
+              ScriptTextOutputCallback scriptAndSelfSubmitCallback =
+                      new ScriptTextOutputCallback(clientSideScriptExecutorFunction);
 
-                HiddenValueCallback hiddenValueCallback = new HiddenValueCallback("clientScriptOutputData");
+              HiddenValueCallback hiddenValueCallback = new HiddenValueCallback("clientScriptOutputData");
 
-                Callback[] callbacks = new Callback[]{scriptAndSelfSubmitCallback, hiddenValueCallback};
+              Callback[] callbacks = new Callback[]{scriptAndSelfSubmitCallback, hiddenValueCallback};
 
-                return send(callbacks).build();
+              return send(callbacks).build();
             }
         } catch (Exception ex) {
             String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
@@ -155,8 +159,9 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
     public static String createClientSideScript(String url, String apiKey, String apiEndpointURL, String region) {
         String sRegion = ((apiEndpointURL != "" && apiEndpointURL != null) ? "" : " region: \"" + region + "\" \n");
         String sEndpoint = ((apiEndpointURL != "" && apiEndpointURL != null) ? " endpoint: \"" + apiEndpointURL + "?region=" + region + "\" \n" : "");
-        return "const fpPromise = import('" + url + apiKey + "') \n" +
-                      ".then(FingerprintJS => FingerprintJS.load({ \n" + sRegion + sEndpoint +
+        String sImport = ((url == "https://fpjscdn.net/v3") ? "const fpPromise = import('" + url + "/" + apiKey + "') \n" : "const fpPromise = import('" + url + "?apiKey=" + apiKey + "') \n");
+
+        return sImport + ".then(FingerprintJS => FingerprintJS.load({ \n" + sRegion + sEndpoint +
                       "})) \n" +
                       "fpPromise \n" +
                       ".then(fp => fp.get()) \n" +
@@ -186,6 +191,4 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
             );
         }
     }
-
-
 }
