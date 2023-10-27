@@ -6,6 +6,7 @@
 
 package org.forgerock.am.tn.fingerprint;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "1.0.0";
+	static private String currentVersion = "1.0.2";
     static final String logAppender = "[Version: " + currentVersion + "][Marketplace]";
 	
     /** 
@@ -57,7 +58,7 @@ public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
 	@Override
 	protected Map<String, Iterable<? extends Class<? extends Node>>> getNodesByVersion() {
 		return Collections.singletonMap(FingerprintProfilerNodePlugin.currentVersion, 
-				Collections.singletonList(FingerprintProfilerNode.class));
+				Arrays.asList(FingerprintProfilerNode.class, FingerprintResponseNode.class));
 	}
 
     /** 
