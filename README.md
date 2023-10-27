@@ -1,2 +1,0 @@
-# tntp-fingerprint
-# tntp-fingerprint
