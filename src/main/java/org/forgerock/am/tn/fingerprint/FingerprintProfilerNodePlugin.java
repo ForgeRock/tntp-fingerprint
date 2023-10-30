@@ -46,7 +46,7 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "1.0.2";
+	static private String currentVersion = "1.0.7";
     static final String logAppender = "[Version: " + currentVersion + "][Marketplace]";
 	
     /** 
