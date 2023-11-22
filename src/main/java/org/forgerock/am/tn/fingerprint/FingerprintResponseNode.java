@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -21,9 +22,9 @@ import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.NodeProcessException;
+import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.openam.auth.node.api.StaticOutcomeProvider;
 import org.forgerock.openam.auth.node.api.TreeContext;
-import org.forgerock.openam.core.CoreWrapper;
 import org.forgerock.openam.sm.annotations.adapters.Password;
 import org.forgerock.openam.utils.JsonValueBuilder;
 import org.forgerock.util.i18n.PreferredLocales;
@@ -36,7 +37,7 @@ import com.google.inject.assistedinject.Assisted;
 
 
 @Node.Metadata(outcomeProvider = FingerprintResponseNode.OutcomeProvider.class,
-        configClass = FingerprintResponseNode.Config.class)
+        configClass = FingerprintResponseNode.Config.class, tags = {"marketplace", "trustnetwork" })
 public class FingerprintResponseNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger(FingerprintResponseNode.class);
@@ -44,6 +45,8 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
 
     private final Config config;
     private static final String BUNDLE = FingerprintResponseNode.class.getName();
+	private static final String SUCCESS = "SUCCESS";
+	private static final String ERROR = "ERROR";
 
 
     /**
@@ -70,30 +73,30 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
     }
 
 
-
-    private final CoreWrapper coreWrapper;
-
     /**
      * Guice constructor.
      * @param config The node configuration.
      * @throws NodeProcessException If there is an error reading the configuration.
      */
     @Inject
-    public FingerprintResponseNode(@Assisted Config config, CoreWrapper coreWrapper) throws NodeProcessException {
+    public FingerprintResponseNode(@Assisted Config config) throws NodeProcessException {
         this.config = config;
-        this.coreWrapper = coreWrapper;
     }
 
     @Override
     public Action process(TreeContext context) throws NodeProcessException {
 
+    	
+    	HttpURLConnection conn = null;
+    	BufferedReader br = null;
         try {
             logger.debug(loggerPrefix + "Started");
+            NodeState ns = context.getStateFor(this);
 
-            String requestId = context.sharedState.get("deviceRequestId").asString();
+            String requestId = ns.get("deviceRequestId").asString();
 
             URL url = new URL(config.url() + requestId + "?api_key=" + (new String(config.apiKey())));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("content-type", "application/json");
@@ -102,33 +105,49 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
                 throw new RuntimeException(loggerPrefix + "HTTP error code : " + conn.getResponseCode());
             }
 
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
             String output;
             String json = "";
 
             while ((output = br.readLine()) != null) {
                 json = json + output;
             }
-            conn.disconnect();
             
             JsonValue resultJson = JsonValueBuilder.toJsonValue(json);
             String visitorID = resultJson.get("products").get("identification").get("data").get("visitorId").asString();
             Double score = resultJson.get("products").get("identification").get("data").get("confidence").get("score").asDouble();
+        
+            ns.putShared(config.visitorID(), visitorID);
+            ns.putShared("deviceConfidenceScore", score);
 
-            JsonValue newSharedState = context.sharedState.copy();
-            newSharedState.put(config.visitorID(), visitorID);
-            newSharedState.put("deviceConfidenceScore", score);
-
-            if (config.fullResponse()) newSharedState.put(config.response(), json);
-            return goTo(true).replaceSharedState(newSharedState).build();
+            if (config.fullResponse()) 
+            	ns.putShared(config.response(), json);
+            return Action.goTo(SUCCESS).build();
 
         } catch (Exception ex) {
-            String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
-            logger.error(loggerPrefix + "Exception occurred: " + stackTrace);
-            context.getStateFor(this).putShared(loggerPrefix + "Exception", ex.getMessage());
-            context.getStateFor(this).putShared(loggerPrefix + "StackTrace", stackTrace);
-            return Action.goTo("error").build();
+			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
+			logger.error(loggerPrefix + "Exception occurred: " + stackTrace);
+			context.getStateFor(this).putTransient(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
+			context.getStateFor(this).putTransient(loggerPrefix + "StackTrace", new Date() + ": " + stackTrace);
+			return Action.goTo(ERROR).withHeader("Error occurred").withErrorMessage(ex.getMessage()).build();
         } 
+        finally {
+        	if (conn!=null)
+        		try {
+        			conn.disconnect();
+        		}
+        		catch(Exception e) {
+        			//Do nothing... just attempting to close the connection
+        		}
+        	
+        	if (br!=null)
+        		try {
+        			br.close();
+        		}
+        		catch(Exception e) {
+            		//Do nothing... just attempting to close the connection
+        		}
+        }
     }
 
 
@@ -139,8 +158,8 @@ public class FingerprintResponseNode extends AbstractDecisionNode {
                     OutcomeProvider.class.getClassLoader());
 
             return ImmutableList.of(
-                new Outcome("true", "true"),
-                new Outcome("error", "error")
+                new Outcome(SUCCESS, bundle.getString("successOutcome")),
+                new Outcome(ERROR, bundle.getString("errorOutcome"))
             );
         }
     }

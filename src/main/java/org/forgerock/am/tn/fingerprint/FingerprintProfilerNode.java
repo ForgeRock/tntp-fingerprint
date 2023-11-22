@@ -6,8 +6,7 @@
 
 package org.forgerock.am.tn.fingerprint;
 
-import static org.forgerock.openam.auth.node.api.Action.send;
-
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -21,6 +20,7 @@ import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
 import org.forgerock.openam.auth.node.api.Action;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.auth.node.api.NodeProcessException;
+import org.forgerock.openam.auth.node.api.NodeState;
 import org.forgerock.openam.auth.node.api.StaticOutcomeProvider;
 import org.forgerock.openam.auth.node.api.TreeContext;
 import org.forgerock.openam.sm.annotations.adapters.Password;
@@ -41,7 +41,7 @@ import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
  */
 
 @Node.Metadata(outcomeProvider = FingerprintProfilerNode.OutcomeProvider.class,
-        configClass = FingerprintProfilerNode.Config.class)
+        configClass = FingerprintProfilerNode.Config.class, tags = {"marketplace", "trustnetwork" })
 public class FingerprintProfilerNode extends AbstractDecisionNode {
 
 
@@ -50,6 +50,8 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
 
     private final Config config;
     private static final String BUNDLE = FingerprintProfilerNode.class.getName();
+	private static final String NEXT = "NEXT";
+	private static final String ERROR = "ERROR";
 
 
     /**
@@ -108,16 +110,17 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
             Optional<String> result = context.getCallback(HiddenValueCallback.class).map(HiddenValueCallback::getValue).filter(scriptOutput -> !Strings.isNullOrEmpty(scriptOutput));
 
             if (result.isPresent()) {
-                JsonValue newSharedState = context.sharedState.copy();
+            	NodeState ns = context.getStateFor(this);
+                
 
                 JsonValue resultJson = JsonValueBuilder.toJsonValue(result.get());
                 if (!config.ztm()) {
-                    newSharedState.put(config.visitorID(), resultJson.get("visitorID"));
-                    newSharedState.put("deviceConfidenceScore", resultJson.get("score"));
+                	ns.putShared(config.visitorID(), resultJson.get("visitorID"));
+                	ns.putShared("deviceConfidenceScore", resultJson.get("score"));
                 }
-                newSharedState.put("deviceRequestId", resultJson.get("requestID"));
+                ns.putShared("deviceRequestId", resultJson.get("requestID"));
 
-                return goTo(true).replaceSharedState(newSharedState).build();
+                return Action.goTo(NEXT).build();
             } else {
               String fpUrl = config.url();
               if(fpUrl == null || fpUrl == "") {
@@ -131,14 +134,14 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
 
               Callback[] callbacks = new Callback[]{scriptAndSelfSubmitCallback, hiddenValueCallback};
 
-              return send(callbacks).build();
+              return Action.send(callbacks).build();
             }
         } catch (Exception ex) {
-            String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
-            logger.error(loggerPrefix + "Exception occurred: " + stackTrace);
-            context.getStateFor(this).putShared(loggerPrefix + "Exception", ex.getMessage());
-            context.getStateFor(this).putShared(loggerPrefix + "StackTrace", stackTrace);
-            return Action.goTo("error").build();
+			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
+			logger.error(loggerPrefix + "Exception occurred: " + stackTrace);
+			context.getStateFor(this).putTransient(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
+			context.getStateFor(this).putTransient(loggerPrefix + "StackTrace", new Date() + ": " + stackTrace);
+			return Action.goTo(ERROR).withHeader("Error occurred").withErrorMessage(ex.getMessage()).build();
         }
 
     }
@@ -173,8 +176,8 @@ public class FingerprintProfilerNode extends AbstractDecisionNode {
                     OutcomeProvider.class.getClassLoader());
 
             return ImmutableList.of(
-                new Outcome("true", "true"),
-                new Outcome("error", "error")
+                new Outcome(NEXT, bundle.getString("nextOutcome")),
+                new Outcome(ERROR, bundle.getString("errorOutcome"))
             );
         }
     }

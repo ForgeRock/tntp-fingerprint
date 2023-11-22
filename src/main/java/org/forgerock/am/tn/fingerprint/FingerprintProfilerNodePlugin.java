@@ -13,6 +13,8 @@ import java.util.Map;
 import org.forgerock.openam.auth.node.api.AbstractNodeAmPlugin;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.plugins.PluginException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Definition of an <a href="https://backstage.forgerock.com/docs/am/6/apidocs/org/forgerock/openam/auth/node/api/AbstractNodeAmPlugin.html">AbstractNodeAmPlugin</a>. 
@@ -46,8 +48,10 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "1.0.7";
+	static private String currentVersion = "1.0.12";
     static final String logAppender = "[Version: " + currentVersion + "][Marketplace]";
+	private final Logger logger = LoggerFactory.getLogger(FingerprintProfilerNodePlugin.class);
+	private String loggerPrefix = "[IGCommunicationPlugin]" + FingerprintProfilerNodePlugin.logAppender;
 	
     /** 
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and
@@ -95,6 +99,14 @@ public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
      */	
 	@Override
 	public void upgrade(String fromVersion) throws PluginException {
+		logger.error(loggerPrefix + "fromVersion = " + fromVersion);
+		logger.error(loggerPrefix + "currentVersion = " + currentVersion);
+		try {
+			pluginTools.upgradeAuthNode(FingerprintProfilerNode.class);
+			pluginTools.upgradeAuthNode(FingerprintResponseNode.class);
+		} catch (Exception e) {
+			throw new PluginException(e.getMessage());
+		}
 		super.upgrade(fromVersion);
 	}
 
