@@ -1,0 +1,243 @@
+{
+  "meta": {
+    "origin": "https://openam-tntp-fingerprint1.forgeblocks.com/platform/?realm=alpha#/journeys",
+    "exportedBy": "justin.chin@forgerock.com",
+    "exportDate": "2023-11-27T21:45:00.515Z",
+    "exportTool": "platform-admin ui tree export",
+    "exportToolVersion": "1.0",
+    "treesSelectedForExport": [
+      "Fingerprint"
+    ],
+    "innerTreesIncluded": []
+  },
+  "trees": {
+    "Fingerprint": {
+      "tree": {
+        "_id": "Fingerprint",
+        "_rev": "-1777728376",
+        "identityResource": "managed/alpha_user",
+        "uiConfig": {
+          "categories": "[]"
+        },
+        "entryNodeId": "24125834-1810-4f07-b406-6e5f7c63f8e8",
+        "innerTreeOnly": false,
+        "nodes": {
+          "1c42f365-2fd8-4c37-b802-740d6b79c2a0": {
+            "x": 693,
+            "y": 137.5,
+            "connections": {
+              "NEXT": "83763e88-202f-4e89-8883-0bda5271d9e4",
+              "ERROR": "e301438c-0bd0-429c-ab0c-66126501069a"
+            },
+            "nodeType": "FingerprintProfilerNode",
+            "displayName": "Fingerprint Profiler"
+          },
+          "24125834-1810-4f07-b406-6e5f7c63f8e8": {
+            "x": 210,
+            "y": 109,
+            "connections": {
+              "outcome": "8980c28e-5c60-4bc2-834d-73babf40e76f"
+            },
+            "nodeType": "PageNode",
+            "displayName": "Page Node"
+          },
+          "83763e88-202f-4e89-8883-0bda5271d9e4": {
+            "x": 925,
+            "y": 125,
+            "connections": {
+              "CONFIGURATION_FAILED": "e301438c-0bd0-429c-ab0c-66126501069a",
+              "false": "e301438c-0bd0-429c-ab0c-66126501069a",
+              "true": "70e691a5-1e33-4ac3-a356-e7b6d60d92e0"
+            },
+            "nodeType": "ConfigProviderNode",
+            "displayName": "Configuration Provider"
+          },
+          "8980c28e-5c60-4bc2-834d-73babf40e76f": {
+            "x": 455,
+            "y": 137.5,
+            "connections": {
+              "false": "e301438c-0bd0-429c-ab0c-66126501069a",
+              "true": "1c42f365-2fd8-4c37-b802-740d6b79c2a0"
+            },
+            "nodeType": "DataStoreDecisionNode",
+            "displayName": "Data Store Decision"
+          }
+        },
+        "staticNodes": {
+          "startNode": {
+            "x": 70,
+            "y": 155
+          },
+          "70e691a5-1e33-4ac3-a356-e7b6d60d92e0": {
+            "x": 1183,
+            "y": 80
+          },
+          "e301438c-0bd0-429c-ab0c-66126501069a": {
+            "x": 1186,
+            "y": 280
+          }
+        },
+        "description": "Client side id delivery",
+        "enabled": true
+      },
+      "nodes": {
+        "1c42f365-2fd8-4c37-b802-740d6b79c2a0": {
+          "_id": "1c42f365-2fd8-4c37-b802-740d6b79c2a0",
+          "_rev": "-1538785506",
+          "ztm": false,
+          "visitorID": "deviceFingerPrint",
+          "region": "EU",
+          "apiKey": null,
+          "_type": {
+            "_id": "FingerprintProfilerNode",
+            "name": "Fingerprint Profiler",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "NEXT",
+              "displayName": "Next"
+            },
+            {
+              "id": "ERROR",
+              "displayName": "Error"
+            }
+          ]
+        },
+        "24125834-1810-4f07-b406-6e5f7c63f8e8": {
+          "_id": "24125834-1810-4f07-b406-6e5f7c63f8e8",
+          "_rev": "-1031325312",
+          "nodes": [
+            {
+              "_id": "13ce7130-3c75-4653-b016-488a2ffb2767",
+              "nodeType": "ValidatedUsernameNode",
+              "displayName": "Platform Username"
+            },
+            {
+              "_id": "dc762e1b-0545-47b9-99cc-33dfb783db5f",
+              "nodeType": "ValidatedPasswordNode",
+              "displayName": "Platform Password"
+            }
+          ],
+          "pageDescription": {},
+          "pageHeader": {},
+          "_type": {
+            "_id": "PageNode",
+            "name": "Page Node",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "outcome",
+              "displayName": "Outcome"
+            }
+          ]
+        },
+        "83763e88-202f-4e89-8883-0bda5271d9e4": {
+          "_id": "83763e88-202f-4e89-8883-0bda5271d9e4",
+          "_rev": "-1219900142",
+          "script": "13541cea-71c9-44d3-ae1c-988cd7d82a94",
+          "nodeType": "MessageNode",
+          "scriptInputs": [
+            "*"
+          ],
+          "_type": {
+            "_id": "ConfigProviderNode",
+            "name": "Configuration Provider",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "true",
+              "displayName": "True"
+            },
+            {
+              "id": "false",
+              "displayName": "False"
+            },
+            {
+              "id": "CONFIGURATION_FAILED",
+              "displayName": "Configuration failure"
+            }
+          ]
+        },
+        "8980c28e-5c60-4bc2-834d-73babf40e76f": {
+          "_id": "8980c28e-5c60-4bc2-834d-73babf40e76f",
+          "_rev": "1971884795",
+          "_type": {
+            "_id": "DataStoreDecisionNode",
+            "name": "Data Store Decision",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "true",
+              "displayName": "True"
+            },
+            {
+              "id": "false",
+              "displayName": "False"
+            }
+          ]
+        }
+      },
+      "innerNodes": {
+        "13ce7130-3c75-4653-b016-488a2ffb2767": {
+          "_id": "13ce7130-3c75-4653-b016-488a2ffb2767",
+          "_rev": "258717355",
+          "usernameAttribute": "userName",
+          "validateInput": false,
+          "_type": {
+            "_id": "ValidatedUsernameNode",
+            "name": "Platform Username",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "outcome",
+              "displayName": "Outcome"
+            }
+          ]
+        },
+        "dc762e1b-0545-47b9-99cc-33dfb783db5f": {
+          "_id": "dc762e1b-0545-47b9-99cc-33dfb783db5f",
+          "_rev": "1820129533",
+          "passwordAttribute": "password",
+          "validateInput": false,
+          "_type": {
+            "_id": "ValidatedPasswordNode",
+            "name": "Platform Password",
+            "collection": true
+          },
+          "_outcomes": [
+            {
+              "id": "outcome",
+              "displayName": "Outcome"
+            }
+          ]
+        }
+      },
+      "scripts": {
+        "13541cea-71c9-44d3-ae1c-988cd7d82a94": {
+          "_id": "13541cea-71c9-44d3-ae1c-988cd7d82a94",
+          "name": "displayData",
+          "description": null,
+          "script": "\"config = {\\n  \\\"messageYes\\\": {\\n            \\\"en\\\": \\\"Continue\\\"\\n          },\\n  \\\"message\\\": {\\n            \\\"en\\\": \\\"Fingerprint: \\\" + nodeState.get(\\\"deviceFingerPrint\\\") + \\\", Confidence Score: \\\" + nodeState.get(\\\"deviceConfidenceScore\\\")\\n          },\\n  \\\"messageNo\\\": {\\n            \\\"en\\\": \\\"Exit\\\"\\n          },\\n // \\\"value\\\": nodeState.get(\\\"userName\\\"),\\n  \\n};\\n\"",
+          "default": false,
+          "language": "JAVASCRIPT",
+          "context": "CONFIG_PROVIDER_NODE",
+          "createdBy": "null",
+          "creationDate": 0,
+          "lastModifiedBy": "null",
+          "lastModifiedDate": 0,
+          "evaluatorVersion": "1.0"
+        }
+      },
+      "emailTemplates": {},
+      "socialIdentityProviders": {},
+      "themes": [],
+      "saml2Entities": {},
+      "circlesOfTrust": {}
+    }
+  }
+}
