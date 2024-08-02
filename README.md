@@ -27,6 +27,12 @@ Fingerprint Profiler node
 
 Fingerprint Response node
 
+## Usage 
+
+To deploy these nodes, download the jar from the releases tab on github 
+[here](https://github.com/ForgeRock/tntp-fingerprint/releases). Next, copy the jar into the 
+../web-container/webapps/openam/WEB-INF/lib directory where AM is deployed. Restart the web container to pick up the 
+new node. The node will then appear in the authentication trees components palette.
 ## Fingerprint Profiler node
 
 The Fingerprint Profiler node injects the client-side Javascript code required for the fingerprinting process.
