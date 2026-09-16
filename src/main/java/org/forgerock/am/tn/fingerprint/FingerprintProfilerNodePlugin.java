@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FingerprintProfilerNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "1.0.13";
+	static private String currentVersion = "1.0.14";
     static final String logAppender = "[Version: " + currentVersion + "][Marketplace]";
 	private final Logger logger = LoggerFactory.getLogger(FingerprintProfilerNodePlugin.class);
 	private String loggerPrefix = "[FingerprintProfilerNodePlugin]" + FingerprintProfilerNodePlugin.logAppender;
